@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOUSATSU - アニメ・漫画考察コミュニティ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Dela+Gothic+One&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #7C3AED; --primary-light: #A78BFA; --primary-pale: #EDE9FE;
+  --accent: #10B981; --accent-orange: #F59E0B;
+  --text: #1F1635; --text-muted: #6B7280;
+  --bg: #F5F3FF; --card: #FFFFFF; --border: #E5E7EB; --border-light: #F3F0FF;
+  --tag-bg: #F3F0FF; --hit: #059669; --hit-bg: #ECFDF5; --hit-border: #6EE7B7;
+  --pending-bg: #FFFBEB; --pending-border: #FCD34D;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Noto Sans JP',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+header { background:white; border-bottom:1px solid var(--border); padding:12px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:200; box-shadow:0 1px 8px rgba(124,58,237,0.06); }
+.logo { display:flex; align-items:center; gap:10px; text-decoration:none; cursor:pointer; }
+.logo-icon { width:40px; height:40px; background:var(--primary-pale); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+.logo-text h1 { font-family:'Dela Gothic One',sans-serif; font-size:18px; color:var(--primary); letter-spacing:0.04em; }
+.logo-text p { font-size:10px; color:var(--text-muted); margin-top:-2px; }
+.header-actions { display:flex; gap:10px; align-items:center; }
+.btn-login { border:2px solid var(--primary); background:white; color:var(--primary); border-radius:20px; padding:7px 20px; font-size:13px; font-family:'Noto Sans JP',sans-serif; font-weight:700; cursor:pointer; transition:all 0.2s; }
+.btn-login:hover { background:var(--primary-pale); }
+.btn-post { background:var(--primary); color:white; border:none; border-radius:20px; padding:8px 20px; font-size:13px; font-family:'Noto Sans JP',sans-serif; font-weight:700; cursor:pointer; transition:all 0.2s; }
+.btn-post:hover { background:#6D28D9; transform:translateY(-1px); box-shadow:0 4px 12px rgba(124,58,237,0.3); }
+
+nav { background:white; border-bottom:1px solid var(--border); padding:0 20px; display:flex; overflow-x:auto; }
+.nav-item { padding:14px 18px; font-size:14px; font-weight:700; color:var(--text-muted); cursor:pointer; border-bottom:3px solid transparent; transition:all 0.2s; display:flex; align-items:center; gap:6px; white-space:nowrap; }
+.nav-item.active { color:var(--primary); border-bottom-color:var(--primary); }
+.nav-item:hover:not(.active) { color:var(--primary); }
+
+.page { display:none; }
+.page.active { display:block; }
+main { max-width:680px; margin:0 auto; padding:20px 16px 80px; }
+
+.search-wrap { position:relative; margin-bottom:16px; }
+.search-wrap input { width:100%; border:1.5px solid var(--border); border-radius:24px; padding:12px 20px 12px 44px; font-size:14px; font-family:'Noto Sans JP',sans-serif; background:white; outline:none; transition:border-color 0.2s; }
+.search-wrap input:focus { border-color:var(--primary); }
+.search-icon { position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:16px; color:var(--text-muted); }
+
+.genre-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+.genre-chip { border:1.5px solid var(--border); border-radius:20px; padding:6px 14px; font-size:13px; cursor:pointer; background:white; font-family:'Noto Sans JP',sans-serif; font-weight:500; transition:all 0.2s; color:var(--text); }
+.genre-chip.active { border-color:var(--primary); background:var(--primary-pale); color:var(--primary); font-weight:700; }
+
+.sort-row { display:flex; gap:8px; margin-bottom:16px; }
+.sort-chip { border:1.5px solid var(--border); border-radius:20px; padding:6px 16px; font-size:13px; cursor:pointer; background:white; font-family:'Noto Sans JP',sans-serif; font-weight:700; transition:all 0.2s; }
+.sort-chip.active { background:var(--primary); color:white; border-color:var(--primary); }
+
+.stats-bar { background:linear-gradient(135deg,#F5F3FF,#EDE9FE); border:1.5px solid #DDD6FE; border-radius:12px; padding:12px 18px; display:flex; gap:20px; flex-wrap:wrap; margin-bottom:16px; font-size:13px; font-weight:700; }
+.stat-item { display:flex; align-items:center; gap:5px; }
+.stat-item .num { color:var(--primary); }
+
+.post-card { background:white; border:1.5px solid var(--border-light); border-radius:16px; padding:18px; margin-bottom:14px; transition:box-shadow 0.2s,transform 0.2s; animation:fadeUp 0.4s ease both; }
+.post-card:hover { box-shadow:0 4px 20px rgba(124,58,237,0.12); transform:translateY(-1px); }
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+.post-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.avatar { width:36px; height:36px; border-radius:10px; background:var(--primary-pale); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:900; color:var(--primary); flex-shrink:0; }
+.post-meta { flex:1; min-width:0; }
+.post-meta-top { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:2px; }
+.user-name { font-size:13px; font-weight:700; }
+.work-badge { border-radius:12px; padding:2px 9px; font-size:11px; font-weight:700; border:1.5px solid; }
+.rank-badge { font-size:11px; font-weight:700; color:var(--text-muted); }
+.post-time { font-size:12px; color:var(--text-muted); margin-left:auto; }
+.post-title { font-size:16px; font-weight:900; line-height:1.4; margin-bottom:10px; }
+.post-body { font-size:13.5px; line-height:1.75; color:#374151; background:#FAFAFA; border-radius:10px; padding:12px 14px; margin-bottom:12px; border:1px solid var(--border-light); }
+.tag-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+.tag { background:var(--tag-bg); border-radius:12px; padding:3px 10px; font-size:12px; color:var(--primary); font-weight:700; }
+.post-footer { display:flex; align-items:center; gap:6px; }
+.action-btn { display:flex; align-items:center; gap:5px; border:1.5px solid var(--border); border-radius:20px; padding:6px 14px; font-size:13px; font-weight:700; color:var(--text-muted); cursor:pointer; background:white; font-family:'Noto Sans JP',sans-serif; transition:all 0.2s; }
+.action-btn:hover { border-color:var(--primary-light); color:var(--primary); }
+.action-btn.liked { color:#EF4444; border-color:#FECACA; background:#FFF5F5; }
+.pt-badge { margin-left:auto; font-size:14px; font-weight:900; color:var(--accent-orange); }
+
+.hit-card { margin-top:12px; border:1.5px solid var(--hit-border); border-radius:10px; padding:12px 14px; background:var(--hit-bg); }
+.pending-card { margin-top:12px; border:1.5px solid var(--pending-border); border-radius:10px; padding:12px 14px; background:var(--pending-bg); }
+.vote-btn { border:1.5px solid; border-radius:16px; padding:4px 14px; font-weight:700; font-size:13px; cursor:pointer; font-family:'Noto Sans JP',sans-serif; transition:all 0.2s; }
+.vote-yes { border-color:#6EE7B7; color:var(--hit); background:white; }
+.vote-no { border-color:#FCA5A5; color:#EF4444; background:white; }
+
+.badge-kimetsu { background:#FFF1F2; border-color:#FECACA; color:#DC2626; }
+.badge-jujutsu { background:#EFF6FF; border-color:#BFDBFE; color:#1D4ED8; }
+.badge-onepiece { background:#FFFBEB; border-color:#FDE68A; color:#92400E; }
+.badge-shingeki { background:#F0FDF4; border-color:#BBF7D0; color:#15803D; }
+.badge-default { background:var(--primary-pale); border-color:#DDD6FE; color:var(--primary); }
+
+/* BATTLE */
+.battle-card { background:white; border:1.5px solid var(--border-light); border-radius:16px; padding:18px; margin-bottom:16px; animation:fadeUp 0.4s ease both; }
+.battle-vs { display:flex; align-items:stretch; gap:0; margin:12px 0; }
+.battle-side { flex:1; padding:14px; border-radius:12px; }
+.battle-side-a { background:#FFF1F2; border:1.5px solid #FECACA; }
+.battle-side-b { background:#EFF6FF; border:1.5px solid #BFDBFE; }
+.battle-vs-divider { display:flex; align-items:center; justify-content:center; width:44px; flex-shrink:0; }
+.vs-badge { background:var(--primary); color:white; font-family:'Dela Gothic One',sans-serif; font-size:14px; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; }
+.battle-side-title { font-size:14px; font-weight:900; margin-bottom:6px; line-height:1.3; }
+.battle-side-body { font-size:12px; color:#374151; line-height:1.6; }
+.battle-vote-row { display:flex; gap:10px; margin-top:14px; }
+.battle-vote-btn { flex:1; border:2px solid; border-radius:12px; padding:10px; font-size:13px; font-weight:700; font-family:'Noto Sans JP',sans-serif; cursor:pointer; transition:all 0.2s; }
+.battle-vote-a { border-color:#FECACA; color:#DC2626; background:white; }
+.battle-vote-a:hover,.battle-vote-a.selected { background:#FFF1F2; }
+.battle-vote-b { border-color:#BFDBFE; color:#1D4ED8; background:white; }
+.battle-vote-b:hover,.battle-vote-b.selected { background:#EFF6FF; }
+.battle-bar { height:8px; background:#F3F4F6; border-radius:4px; overflow:hidden; margin-top:12px; }
+.battle-bar-fill { height:100%; background:linear-gradient(90deg,#EF4444,#7C3AED,#3B82F6); border-radius:4px; transition:width 0.6s ease; }
+.battle-votes-label { display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-top:6px; }
+
+/* RANKING */
+.section-title { font-size:16px; font-weight:900; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.rank-card { background:white; border:1.5px solid var(--border-light); border-radius:14px; padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; gap:14px; animation:fadeUp 0.4s ease both; }
+.rank-num { font-family:'Dela Gothic One',sans-serif; font-size:22px; width:36px; text-align:center; flex-shrink:0; }
+.rank-1 { color:#F59E0B; } .rank-2 { color:#9CA3AF; } .rank-3 { color:#CD7F32; } .rank-other { color:var(--text-muted); font-size:16px; }
+.rank-info { flex:1; }
+.rank-name { font-size:14px; font-weight:900; }
+.rank-sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
+.rank-pt { font-size:16px; font-weight:900; color:var(--accent-orange); }
+
+/* MY PAGE */
+.mypage-hero { background:linear-gradient(135deg,var(--primary),#A855F7); border-radius:20px; padding:28px 20px; color:white; text-align:center; margin-bottom:20px; }
+.mypage-avatar { width:72px; height:72px; background:white; border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:32px; margin:0 auto 14px; font-weight:900; color:var(--primary); }
+.mypage-name { font-size:20px; font-weight:900; margin-bottom:4px; }
+.mypage-rank { font-size:13px; opacity:0.85; margin-bottom:16px; }
+.mypage-stats { display:flex; justify-content:center; gap:28px; }
+.mypage-stat { text-align:center; }
+.mypage-stat-num { font-size:22px; font-weight:900; }
+.mypage-stat-label { font-size:11px; opacity:0.8; margin-top:2px; }
+.mypage-section { background:white; border-radius:16px; padding:18px; margin-bottom:14px; border:1.5px solid var(--border-light); }
+.mypage-section h3 { font-size:15px; font-weight:900; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.achievement-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.achievement { text-align:center; padding:14px 8px; background:var(--bg); border-radius:12px; border:1.5px solid var(--border-light); }
+.achievement-icon { font-size:28px; margin-bottom:6px; }
+.achievement-name { font-size:11px; font-weight:700; line-height:1.3; }
+.achievement.locked { opacity:0.4; filter:grayscale(1); }
+
+/* MODAL */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; align-items:flex-end; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal { background:white; border-radius:24px 24px 0 0; width:100%; max-width:680px; max-height:92vh; overflow-y:auto; padding:24px 20px 40px; animation:slideUp 0.35s cubic-bezier(0.32,0.72,0,1); }
+@keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.modal-title { font-size:18px; font-weight:900; }
+.modal-close { background:#F3F4F6; border:none; border-radius:50%; width:32px; height:32px; font-size:16px; cursor:pointer; }
+.form-group { margin-bottom:16px; }
+.form-label { font-size:13px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block; }
+.form-input { width:100%; border:1.5px solid var(--border); border-radius:12px; padding:12px 14px; font-size:14px; font-family:'Noto Sans JP',sans-serif; outline:none; transition:border-color 0.2s; }
+.form-input:focus { border-color:var(--primary); }
+.form-textarea { width:100%; border:1.5px solid var(--border); border-radius:12px; padding:12px 14px; font-size:14px; font-family:'Noto Sans JP',sans-serif; outline:none; resize:vertical; min-height:120px; }
+.form-textarea:focus { border-color:var(--primary); }
+.ai-brushup-btn { width:100%; background:linear-gradient(135deg,#7C3AED,#A855F7); color:white; border:none; border-radius:12px; padding:12px; font-size:14px; font-weight:700; font-family:'Noto Sans JP',sans-serif; cursor:pointer; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s; }
+.ai-brushup-btn:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(124,58,237,0.35); }
+.ai-brushup-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+.ai-result-box { background:linear-gradient(135deg,#F5F3FF,#EDE9FE); border:1.5px solid #DDD6FE; border-radius:12px; padding:14px; margin-bottom:14px; display:none; }
+.ai-result-box.show { display:block; }
+.ai-result-label { font-size:12px; font-weight:700; color:var(--primary); margin-bottom:8px; }
+.ai-result-text { font-size:13.5px; line-height:1.75; color:var(--text); white-space:pre-wrap; }
+.ai-apply-btn { background:var(--primary); color:white; border:none; border-radius:8px; padding:7px 16px; font-size:13px; font-weight:700; font-family:'Noto Sans JP',sans-serif; cursor:pointer; margin-top:10px; }
+.btn-submit { width:100%; background:var(--primary); color:white; border:none; border-radius:20px; padding:14px; font-size:16px; font-weight:900; font-family:'Noto Sans JP',sans-serif; cursor:pointer; transition:all 0.2s; }
+.btn-submit:hover { background:#6D28D9; }
+
+.spinner { display:inline-block; width:18px; height:18px; border:3px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+footer { border-top:1px solid var(--border); padding:28px 20px; text-align:center; background:white; margin-top:20px; }
+.footer-logo { font-family:'Dela Gothic One',sans-serif; font-size:18px; color:var(--primary); display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:12px; }
+.footer-links { display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin-bottom:10px; }
+.footer-links a { font-size:13px; color:var(--primary); text-decoration:none; font-weight:700; }
+.footer-copy { font-size:12px; color:var(--text-muted); }
+
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--text); color:white; padding:12px 24px; border-radius:24px; font-size:14px; font-weight:700; z-index:999; transition:transform 0.3s ease; white-space:nowrap; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="switchPage('timeline')">
+    <div class="logo-icon">🔍</div>
+    <div class="logo-text"><h1>KOUSATSU</h1><p>アニメ・漫画考察コミュニティ</p></div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-login">ログイン</button>
+    <button class="btn-post" onclick="openModal()">✏️ 投稿する</button>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-item active" id="nav-timeline" onclick="switchPage('timeline')">📋 タイムライン</div>
+  <div class="nav-item" id="nav-battle" onclick="switchPage('battle')">⚔️ バトル</div>
+  <div class="nav-item" id="nav-ranking" onclick="switchPage('ranking')">🏆 ランキング</div>
+  <div class="nav-item" id="nav-mypage" onclick="switchPage('mypage')">📊 マイページ</div>
+</nav>
+
+<!-- TIMELINE -->
+<div id="page-timeline" class="page active">
+<main>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="作品名・キーワードで検索..." oninput="filterPosts(this.value)">
+  </div>
+  <div class="genre-row">
+    <span class="genre-chip active" onclick="setGenre(this,'すべて')">すべて</span>
+    <span class="genre-chip" onclick="setGenre(this,'少年漫画')">少年漫画</span>
+    <span class="genre-chip" onclick="setGenre(this,'少女漫画')">少女漫画</span>
+    <span class="genre-chip" onclick="setGenre(this,'SF・ファンタジー')">SF・ファンタジー</span>
+    <span class="genre-chip" onclick="setGenre(this,'ホラー・ミステリー')">ホラー・ミステリー</span>
+    <span class="genre-chip" onclick="setGenre(this,'ラブコメ')">ラブコメ</span>
+  </div>
+  <div class="sort-row">
+    <span class="sort-chip active" onclick="setSort(this,'new')">🆕 新着</span>
+    <span class="sort-chip" onclick="setSort(this,'hot')">🔥 人気</span>
+    <span class="sort-chip" onclick="setSort(this,'hit')">🎯 的中</span>
+  </div>
+  <div class="stats-bar">
+    <span class="stat-item">📝 考察数 <span class="num" id="statCount">4</span></span>
+    <span class="stat-item">❤️ 総いいね <span class="num" id="statLikes">704</span></span>
+    <span class="stat-item">🔗 総シェア <span class="num">98</span></span>
+    <span class="stat-item">⚔️ バトル中 <span class="num">2</span></span>
+    <span class="stat-item">🎯 的中認定 <span class="num">1</span></span>
+  </div>
+  <div id="postList"></div>
+</main>
+</div>
+
+<!-- BATTLE -->
+<div id="page-battle" class="page">
+<main>
+  <div style="margin-bottom:20px;">
+    <div style="font-size:20px;font-weight:900;margin-bottom:6px;">⚔️ 考察バトル</div>
+    <p style="font-size:13px;color:var(--text-muted);">2つの考察、どちらが正しい？投票して議論しよう！</p>
+  </div>
+  <div class="battle-card">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span class="work-badge badge-onepiece">ONE PIECE</span>
+      <span style="font-size:12px;color:var(--text-muted);">🔥 投票数 142</span>
+    </div>
+    <div style="font-size:16px;font-weight:900;margin-bottom:12px;">イムの正体は何者か？</div>
+    <div class="battle-vs">
+      <div class="battle-side battle-side-a">
+        <div class="battle-side-title">🔴 ジョイボーイ本人説</div>
+        <div class="battle-side-body">800年前のジョイボーイが何らかの方法で生き続けており、自らが世界政府を作った張本人。ニカの実の対極となる悪魔の実を持つ。</div>
+      </div>
+      <div class="battle-vs-divider"><div class="vs-badge">VS</div></div>
+      <div class="battle-side battle-side-b">
+        <div class="battle-side-title">🔵 ジョイボーイの敵対者説</div>
+        <div class="battle-side-body">ジョイボーイの宿敵として800年生き続けた存在。空白の100年で勝利した側であり、世界を支配し続けるために不老の力を得た。</div>
+      </div>
+    </div>
+    <div class="battle-bar"><div class="battle-bar-fill" style="width:62%"></div></div>
+    <div class="battle-votes-label"><span style="color:#DC2626">🔴 89票 (62%)</span><span style="color:#1D4ED8">53票 (38%) 🔵</span></div>
+    <div class="battle-vote-row">
+      <button class="battle-vote-btn battle-vote-a" onclick="battleVote(this,'b1','a')">🔴 ジョイボーイ本人に投票</button>
+      <button class="battle-vote-btn battle-vote-b" onclick="battleVote(this,'b1','b')">🔵 敵対者に投票</button>
+    </div>
+  </div>
+  <div class="battle-card">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span class="work-badge badge-jujutsu">呪術廻戦</span>
+      <span style="font-size:12px;color:var(--text-muted);">🔥 投票数 98</span>
+    </div>
+    <div style="font-size:16px;font-weight:900;margin-bottom:12px;">五条悟の封印は計画的だったのか？</div>
+    <div class="battle-vs">
+      <div class="battle-side battle-side-a">
+        <div class="battle-side-title">🔴 五条は意図的に封印された</div>
+        <div class="battle-side-body">無下限を持つ五条が不意打ちをくらうわけがない。あの封印は五条自身がより大きな計画のために「許した」行動だった。</div>
+      </div>
+      <div class="battle-vs-divider"><div class="vs-badge">VS</div></div>
+      <div class="battle-side battle-side-b">
+        <div class="battle-side-title">🔵 純粋に油断した</div>
+        <div class="battle-side-body">五条は天才故に慢心があった。夏油の器という想定外の状況に加え、過去への油断が重なり、本当に不意をつかれた。</div>
+      </div>
+    </div>
+    <div class="battle-bar"><div class="battle-bar-fill" style="width:55%"></div></div>
+    <div class="battle-votes-label"><span style="color:#DC2626">🔴 54票 (55%)</span><span style="color:#1D4ED8">44票 (45%) 🔵</span></div>
+    <div class="battle-vote-row">
+      <button class="battle-vote-btn battle-vote-a" onclick="battleVote(this,'b2','a')">🔴 計画的に投票</button>
+      <button class="battle-vote-btn battle-vote-b" onclick="battleVote(this,'b2','b')">🔵 油断に投票</button>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- RANKING -->
+<div id="page-ranking" class="page">
+<main>
+  <div class="ranking-section" style="margin-bottom:28px;">
+    <div class="section-title">🏆 今週の考察ランキング</div>
+    <div id="rankingList"></div>
+  </div>
+  <div class="ranking-section">
+    <div class="section-title">👑 考察士ランキング</div>
+    <div id="userRankingList"></div>
+  </div>
+</main>
+</div>
+
+<!-- MY PAGE -->
+<div id="page-mypage" class="page">
+<main>
+  <div class="mypage-hero">
+    <div class="mypage-avatar">調</div>
+    <div class="mypage-name">調査兵団員</div>
+    <div class="mypage-rank">💡 熟練考察士 · Lv.12</div>
+    <div class="mypage-stats">
+      <div class="mypage-stat"><div class="mypage-stat-num" id="myStatPosts">1</div><div class="mypage-stat-label">投稿考察</div></div>
+      <div class="mypage-stat"><div class="mypage-stat-num" id="myStatLikes">142</div><div class="mypage-stat-label">獲得いいね</div></div>
+      <div class="mypage-stat"><div class="mypage-stat-num">1,240</div><div class="mypage-stat-label">累計pt</div></div>
+      <div class="mypage-stat"><div class="mypage-stat-num">1</div><div class="mypage-stat-label">的中認定</div></div>
+    </div>
+  </div>
+  <div class="mypage-section">
+    <h3>🎖️ 獲得バッジ</h3>
+    <div class="achievement-grid">
+      <div class="achievement"><div class="achievement-icon">🔍</div><div class="achievement-name">初投稿</div></div>
+      <div class="achievement"><div class="achievement-icon">🎯</div><div class="achievement-name">的中認定</div></div>
+      <div class="achievement"><div class="achievement-icon">🔥</div><div class="achievement-name">週間人気</div></div>
+      <div class="achievement locked"><div class="achievement-icon">👑</div><div class="achievement-name">月間1位</div></div>
+      <div class="achievement locked"><div class="achievement-icon">💎</div><div class="achievement-name">的中10回</div></div>
+      <div class="achievement locked"><div class="achievement-icon">🌟</div><div class="achievement-name">殿堂入り</div></div>
+    </div>
+  </div>
+  <div class="mypage-section">
+    <h3>📝 自分の考察</h3>
+    <div id="myPosts"></div>
+  </div>
+</main>
+</div>
+
+<footer>
+  <div class="footer-logo">🔍 KOUSATSU</div>
+  <div class="footer-links">
+    <a href="#">利用規約</a><a href="#">プライバシーポリシー</a><a href="#">特定商取引法</a>
+  </div>
+  <div class="footer-copy">© 2025 KOUSATSU. All rights reserved.</div>
+</footer>
+
+<!-- POST MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ 考察を投稿する</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">作品名 *</label>
+      <input class="form-input" id="inputWork" placeholder="例：鬼滅の刃、ワンピース..." list="workList">
+      <datalist id="workList">
+        <option value="鬼滅の刃"><option value="呪術廻戦"><option value="ONE PIECE">
+        <option value="進撃の巨人"><option value="ドラゴンボール"><option value="BLEACH">
+        <option value="ナルト"><option value="ハンターハンター">
+      </datalist>
+    </div>
+    <div class="form-group">
+      <label class="form-label">考察タイトル *</label>
+      <input class="form-input" id="inputTitle" placeholder="例：無惨が人間を憎んだ本当の理由">
+    </div>
+    <div class="form-group">
+      <label class="form-label">考察内容 *</label>
+      <textarea class="form-textarea" id="inputBody" placeholder="あなたの考察を書いてください..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">タグ（スペース区切り）</label>
+      <input class="form-input" id="inputTags" placeholder="例：無惨 鬼の起源 考察">
+    </div>
+    <button class="ai-brushup-btn" onclick="runAIBrushup()" id="brushupBtn">
+      ✨ AIで考察をブラッシュアップ
+    </button>
+    <div class="ai-result-box" id="aiResultBox">
+      <div class="ai-result-label">🤖 AIによる改善提案</div>
+      <div class="ai-result-text" id="aiResultText"></div>
+      <button class="ai-apply-btn" onclick="applyAIResult()">この内容を採用する</button>
+    </div>
+    <button class="btn-submit" onclick="submitPost()">投稿する 🚀</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let posts = [
+  { id:1, user:'ヒノカミ', initial:'ヒ', work:'鬼滅の刃', badgeClass:'badge-kimetsu', rank:'💡 熟練考察士', time:'2日前', title:'鬼滅の刃 鬼舞辻無惨が人間を憎んだ本当の理由', body:'無惨は「死への恐怖」から全ての行動が始まっているが、実はあの時代の医者への恨みが根本にある。病弱だった自分を見捨てようとした人間社会への復讐として、鬼という存在を作り上げたのではないか。', tags:['#無惨','#鬼の起源','#考察'], likes:178, comments:44, shares:27, pt:530, genre:'少年漫画', hit:null, liked:false },
+  { id:2, user:'呪術師見習い', initial:'呪', work:'呪術廻戦', badgeClass:'badge-jujutsu', rank:'🔍 考察見習い', time:'1日前', title:'呪術廻戦 五条悟の封印は最初から計画されていた？', body:'夏油の器である羂索が五条を封印したが、これは五条自身が予測していた展開だったと思う。無下限を持つ五条が本当に不意打ちされるとは思えない。あの瞬間に封印を「許した」のは、より大きな計画のためだったのではないか。', tags:['#五条悟','#羂索','#封印'], likes:95, comments:21, shares:9, pt:210, genre:'少年漫画', hit:null, liked:false },
+  { id:3, user:'海賊王への道', initial:'海', work:'ONE PIECE', badgeClass:'badge-onepiece', rank:'🧙 考察エキスパート', time:'5時間前', title:'ワンピース イムの正体について本気で考えてみた', body:'イムの正体はジョイボーイ本人か、その対極の存在だと考えている。800年間生き続けられる理由として、ニカの実の対となる悪魔の実を持っているのではないか。', tags:['#イム様','#空白の100年','#悪魔の実'], likes:289, comments:72, shares:44, pt:870, genre:'少年漫画', hit:'pending', liked:false },
+  { id:4, user:'調査兵団員', initial:'調', work:'進撃の巨人', badgeClass:'badge-shingeki', rank:'💡 熟練考察士', time:'2時間前', title:'進撃の巨人 エレンの真の目的とは？', body:'エレンが地ならしを選んだのは、仲間たちを「人類の英雄」にするためだったと思う。自分が悪になることで、仲間たちが世界から守られる未来を計算していたのではないか。ミカサへの「忘れてくれ」という言葉がその証拠だと思う。', tags:['#エレン','#地ならし','#伏線'], likes:142, comments:38, shares:18, pt:420, genre:'SF・ファンタジー', hit:'confirmed', liked:false },
+];
+
+let currentGenre='すべて', currentSort='new', aiResultCache='';
+const battleVoted={};
+
+function renderPosts(list) {
+  const c=document.getElementById('postList');
+  if(!list.length){c.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:14px;">投稿が見つかりません</div>';return;}
+  c.innerHTML=list.map((p,i)=>`
+    <div class="post-card" style="animation-delay:${i*0.06}s">
+      <div class="post-header">
+        <div class="avatar">${p.initial}</div>
+        <div class="post-meta">
+          <div class="post-meta-top">
+            <span class="user-name">${p.user}</span>
+            <span class="work-badge ${p.badgeClass}">${p.work}</span>
+            <span class="rank-badge">${p.rank}</span>
+            <span class="post-time">${p.time}</span>
+          </div>
+        </div>
+      </div>
+      <div class="post-title">${p.title}</div>
+      <div class="post-body">${p.body}</div>
+      <div class="tag-row">${p.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      <div class="post-footer">
+        <button class="action-btn ${p.liked?'liked':''}" onclick="toggleLike(${p.id},this)">❤️ <span>${p.likes}</span></button>
+        <button class="action-btn">💬 ${p.comments}件</button>
+        <button class="action-btn" onclick="sharePost()">🔗 ${p.shares}</button>
+        <span class="pt-badge">⭐ ${p.pt}pt</span>
+      </div>
+      ${p.hit==='confirmed'?`<div class="hit-card"><div style="font-weight:900;color:var(--hit);display:flex;align-items:center;gap:6px;margin-bottom:6px;">🎯 的中認定！ <span style="font-weight:400;">+200pt 付与済み</span><span style="margin-left:auto;color:var(--text-muted);font-size:12px;font-weight:400;">👍87 · 👎12</span></div><div style="font-size:13px;color:#374151;">📌 最終回でエレンがミカサに「忘れてくれ」と伝えたことが公式で明かされた</div></div>`:''}
+      ${p.hit==='pending'?`<div class="pending-card"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#92400E;font-weight:900;">⏳ 的中申告中 — コミュニティ確認待ち</span><span style="font-size:11px;color:var(--text-muted);">残り 0票で認定</span></div><div style="font-size:13px;color:#374151;margin-bottom:8px;">📌 1126話でイムの正体に関する大きな伏線が回収された</div><div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:8px;">この考察は当たっていると思う？</div><div style="display:flex;gap:8px;"><button class="vote-btn vote-yes" onclick="pendingVote(this,'yes')">👍 34</button><button class="vote-btn vote-no" onclick="pendingVote(this,'no')">👎 8</button></div></div>`:''}
+    </div>`).join('');
+}
+
+function getFiltered(){
+  let l=[...posts];
+  if(currentGenre!=='すべて') l=l.filter(p=>p.genre===currentGenre);
+  if(currentSort==='hot') l.sort((a,b)=>b.likes-a.likes);
+  else if(currentSort==='hit') l=l.filter(p=>p.hit);
+  else l.sort((a,b)=>b.id-a.id);
+  return l;
+}
+function setGenre(el,g){document.querySelectorAll('.genre-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');currentGenre=g;renderPosts(getFiltered());}
+function setSort(el,s){document.querySelectorAll('.sort-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');currentSort=s;renderPosts(getFiltered());}
+function filterPosts(q){renderPosts(getFiltered().filter(p=>p.title.includes(q)||p.work.includes(q)||p.body.includes(q)));}
+function toggleLike(id,btn){const p=posts.find(x=>x.id===id);p.liked=!p.liked;p.likes+=p.liked?1:-1;btn.classList.toggle('liked');btn.querySelector('span').textContent=p.likes;document.getElementById('statLikes').textContent=posts.reduce((a,x)=>a+x.likes,0);}
+function sharePost(){showToast('リンクをコピーしました！🔗');}
+function pendingVote(btn,t){showToast(t==='yes'?'👍「的中している」に投票しました！':'👎「的中していない」に投票しました！');}
+function battleVote(btn,id,side){if(battleVoted[id]){showToast('すでに投票済みです');return;}battleVoted[id]=side;btn.closest('.battle-card').querySelectorAll('.battle-vote-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');showToast(side==='a'?'🔴 Aに投票しました！':'🔵 Bに投票しました！');}
+
+function renderRanking(){
+  const s=[...posts].sort((a,b)=>b.pt-a.pt);
+  document.getElementById('rankingList').innerHTML=s.map((p,i)=>`<div class="rank-card" style="animation-delay:${i*0.07}s"><div class="rank-num ${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other'}">${i+1}</div><div class="rank-info"><div class="rank-name">${p.title}</div><div class="rank-sub">${p.user} · ${p.work} · ❤️${p.likes} 💬${p.comments}</div></div><div class="rank-pt">⭐${p.pt}pt</div></div>`).join('');
+  const u=[{n:'海賊王への道',r:'🧙 考察エキスパート',pt:2840,h:3},{n:'ヒノカミ',r:'💡 熟練考察士',pt:2210,h:2},{n:'調査兵団員',r:'💡 熟練考察士',pt:1840,h:1},{n:'呪術師見習い',r:'🔍 考察見習い',pt:640,h:0}];
+  document.getElementById('userRankingList').innerHTML=u.map((x,i)=>`<div class="rank-card" style="animation-delay:${i*0.07}s"><div class="rank-num ${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other'}">${i+1}</div><div class="rank-info"><div class="rank-name">${x.n}</div><div class="rank-sub">${x.r} · 🎯的中 ${x.h}回</div></div><div class="rank-pt">⭐${x.pt}pt</div></div>`).join('');
+}
+
+function renderMyPage(){
+  const mine=posts.filter(p=>p.user==='調査兵団員');
+  document.getElementById('myStatPosts').textContent=mine.length;
+  document.getElementById('myStatLikes').textContent=mine.reduce((a,p)=>a+p.likes,0);
+  document.getElementById('myPosts').innerHTML=mine.map(p=>`<div style="padding:12px 0;border-bottom:1px solid var(--border-light);"><div style="font-size:14px;font-weight:700;margin-bottom:4px;">${p.title}</div><div style="display:flex;gap:12px;font-size:12px;color:var(--text-muted);">❤️ ${p.likes} 💬 ${p.comments} ⭐ ${p.pt}pt${p.hit==='confirmed'?' <span style="color:var(--hit);font-weight:700;">🎯 的中認定</span>':''}</div></div>`).join('');
+}
+
+function switchPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('nav-'+page).classList.add('active');
+  if(page==='ranking') renderRanking();
+  if(page==='mypage') renderMyPage();
+  window.scrollTo(0,0);
+}
+
+function openModal(){document.getElementById('modalOverlay').classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');document.body.style.overflow='';document.getElementById('aiResultBox').classList.remove('show');aiResultCache='';}
+function handleOverlayClick(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
+
+async function runAIBrushup(){
+  const work=document.getElementById('inputWork').value.trim();
+  const title=document.getElementById('inputTitle').value.trim();
+  const body=document.getElementById('inputBody').value.trim();
+  if(!body){showToast('考察内容を入力してください');return;}
+  const btn=document.getElementById('brushupBtn');
+  btn.disabled=true;
+  btn.innerHTML='<div class="spinner"></div> AI分析中...';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:1000,
+        system:'あなたはアニメ・漫画考察コミュニティ「KOUSATSU」のAIアシスタントです。ユーザーが書いた考察をより説得力があり、読みやすく、面白い内容にブラッシュアップしてください。論理的な根拠を補強し、伏線や作品内の証拠を示唆する表現を追加し、読者を引き込む文体にしてください。日本語で、原文の意図を尊重しながら改善してください。改善後の考察本文のみ返してください。',
+        messages:[{role:'user',content:`作品：${work||'不明'}\nタイトル：${title||'不明'}\n\n考察内容：\n${body}`}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content?.map(c=>c.text||'').join('')||'';
+    if(text){aiResultCache=text;document.getElementById('aiResultText').textContent=text;document.getElementById('aiResultBox').classList.add('show');showToast('✨ AIブラッシュアップ完了！');}
+    else showToast('AIの応答が空でした。もう一度お試しください。');
+  }catch(e){showToast('エラーが発生しました。もう一度お試しください。');}
+  finally{btn.disabled=false;btn.innerHTML='✨ AIで考察をブラッシュアップ';}
+}
+
+function applyAIResult(){if(aiResultCache){document.getElementById('inputBody').value=aiResultCache;document.getElementById('aiResultBox').classList.remove('show');showToast('✅ AIの提案を反映しました！');}}
+
+function submitPost(){
+  const work=document.getElementById('inputWork').value.trim();
+  const title=document.getElementById('inputTitle').value.trim();
+  const body=document.getElementById('inputBody').value.trim();
+  const tagsRaw=document.getElementById('inputTags').value.trim();
+  if(!work||!title||!body){showToast('作品名・タイトル・内容は必須です');return;}
+  const badgeMap={'鬼滅の刃':'badge-kimetsu','呪術廻戦':'badge-jujutsu','ONE PIECE':'badge-onepiece','進撃の巨人':'badge-shingeki'};
+  posts.unshift({id:posts.length+1,user:'調査兵団員',initial:'調',work,badgeClass:badgeMap[work]||'badge-default',rank:'💡 熟練考察士',time:'たった今',title,body,tags:tagsRaw?tagsRaw.split(/\s+/).map(t=>t.startsWith('#')?t:'#'+t):[],likes:0,comments:0,shares:0,pt:0,genre:'少年漫画',hit:null,liked:false});
+  document.getElementById('statCount').textContent=posts.length;
+  ['inputWork','inputTitle','inputBody','inputTags'].forEach(id=>document.getElementById(id).value='');
+  closeModal();renderPosts(getFiltered());switchPage('timeline');showToast('🎉 考察を投稿しました！');
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+renderPosts(getFiltered());
+</script>
+</body>
+</html>
