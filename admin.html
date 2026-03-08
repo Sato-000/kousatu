@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOUSATSU ADMIN</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Dots&family=Noto+Sans+JP:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBTdsRScafRRw6k2aYPgNFaMcRKtBbpxtc",
+    authDomain: "kousatsu-31c0c.firebaseapp.com",
+    projectId: "kousatsu-31c0c",
+    storageBucket: "kousatsu-31c0c.firebasestorage.app",
+    messagingSenderId: "69878680637",
+    appId: "1:69878680637:web:f4c2e149de954b4d146e54",
+  };
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  window._auth = auth;
+  window._fbSignOut = () => signOut(auth);
+  onAuthStateChanged(auth, (user) => {
+    if (typeof window.onFirebaseUser === 'function') window.onFirebaseUser(user);
+  });
+</script>
+
+<style>
+:root {
+  --bg:      #07090f;
+  --bg2:     #0d1018;
+  --bg3:     #131620;
+  --border:  rgba(255,255,255,0.07);
+  --gold:    #FFD700;
+  --cyan:    #00E5FF;
+  --red:     #FF3B5C;
+  --green:   #00FF8C;
+  --purple:  #9D4EDD;
+  --orange:  #FF8C35;
+  --text:    #E8E6F0;
+  --muted:   #6B7094;
+  --sidebar: 220px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+}
+
+/* ── ログイン画面 ── */
+#loginScreen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+}
+.login-box {
+  width: 360px;
+  background: linear-gradient(160deg, #0f1225, #080b18);
+  border: 1px solid rgba(255,215,0,0.2);
+  border-radius: 24px;
+  padding: 40px 32px;
+  text-align: center;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.8), 0 0 60px rgba(255,215,0,0.04);
+}
+.login-logo {
+  font-family: 'Zen Dots', cursive;
+  font-size: 28px;
+  background: linear-gradient(90deg, var(--gold), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+.login-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 32px; }
+.login-field { margin-bottom: 14px; text-align: left; }
+.login-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.login-input {
+  width: 100%; padding: 12px 14px;
+  background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 10px; color: var(--text); font-size: 14px;
+  font-family: 'Noto Sans JP', sans-serif; outline: none; transition: border-color 0.2s;
+}
+.login-input:focus { border-color: rgba(255,215,0,0.5); }
+.login-btn {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, var(--gold), #FF8C35);
+  color: #000; border: none; border-radius: 12px;
+  font-size: 14px; font-weight: 900; cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: all 0.2s; margin-top: 8px;
+}
+.login-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,215,0,0.3); }
+.login-err { font-size: 12px; color: var(--red); margin-top: 10px; min-height: 18px; }
+.login-note { font-size: 11px; color: var(--muted); margin-top: 16px; line-height: 1.6; }
+
+/* ── サイドバー ── */
+#sidebar {
+  width: var(--sidebar); min-height: 100vh;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0;
+  z-index: 100;
+}
+.sb-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.sb-logo-title {
+  font-family: 'Zen Dots', cursive; font-size: 15px;
+  background: linear-gradient(90deg, var(--gold), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.sb-logo-sub { font-size: 9px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; }
+.sb-badge {
+  display: inline-block; font-size: 9px; font-weight: 700;
+  padding: 2px 7px; border-radius: 6px; margin-top: 6px;
+  background: rgba(255,59,92,0.15); border: 1px solid rgba(255,59,92,0.3); color: var(--red);
+  letter-spacing: 0.08em;
+}
+.sb-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
+.sb-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 10px; cursor: pointer;
+  font-size: 13px; font-weight: 700; color: var(--muted);
+  transition: all 0.18s; border: none; background: none; width: 100%; text-align: left;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.sb-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+.sb-item.active { background: rgba(255,215,0,0.1); color: var(--gold); border: 1px solid rgba(255,215,0,0.2); }
+.sb-item-icon { font-size: 16px; width: 20px; text-align: center; }
+.sb-divider { height: 1px; background: var(--border); margin: 8px 0; }
+.sb-footer { padding: 16px; border-top: 1px solid var(--border); }
+.sb-user { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.sb-user-avatar {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 900; color: #000;
+}
+.sb-user-name { font-size: 12px; font-weight: 700; color: var(--text); }
+.sb-user-role { font-size: 10px; color: var(--muted); }
+.sb-logout {
+  width: 100%; padding: 8px; background: rgba(255,59,92,0.08);
+  border: 1px solid rgba(255,59,92,0.2); border-radius: 8px;
+  color: var(--red); font-size: 12px; font-weight: 700; cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif; transition: all 0.2s;
+}
+.sb-logout:hover { background: rgba(255,59,92,0.18); }
+
+/* ── メインコンテンツ ── */
+#main {
+  margin-left: var(--sidebar);
+  flex: 1; min-height: 100vh;
+  display: none;
+}
+#main.show { display: block; }
+.page-header {
+  padding: 28px 32px 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.page-title { font-size: 20px; font-weight: 900; }
+.page-subtitle { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.page-content { padding: 28px 32px; }
+
+/* ── ページ切替 ── */
+.admin-page { display: none; }
+.admin-page.active { display: block; }
+
+/* ── ダッシュボード ── */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
+  padding: 20px; position: relative; overflow: hidden; transition: border-color 0.2s;
+}
+.stat-card:hover { border-color: rgba(255,215,0,0.2); }
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--accent);
+}
+.stat-card[data-accent="gold"]   { --accent: var(--gold); }
+.stat-card[data-accent="cyan"]   { --accent: var(--cyan); }
+.stat-card[data-accent="green"]  { --accent: var(--green); }
+.stat-card[data-accent="purple"] { --accent: var(--purple); }
+.stat-icon { font-size: 22px; margin-bottom: 10px; }
+.stat-num { font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; color: #FFF; }
+.stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.stat-delta { font-size: 11px; margin-top: 6px; font-weight: 700; }
+.stat-delta.up { color: var(--green); }
+.stat-delta.down { color: var(--red); }
+
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+.chart-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+}
+.chart-title { font-size: 13px; font-weight: 900; margin-bottom: 16px; color: var(--text); }
+.bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 100px; }
+.bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.bar {
+  width: 100%; border-radius: 4px 4px 0 0; transition: opacity 0.2s; cursor: pointer;
+  position: relative;
+}
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--muted); font-weight: 700; }
+.bar-val { font-size: 9px; color: var(--text); font-weight: 700; }
+
+.donut-wrap { display: flex; align-items: center; gap: 20px; }
+.donut-legend { display: flex; flex-direction: column; gap: 8px; }
+.donut-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.donut-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+.recent-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+.recent-title { font-size: 13px; font-weight: 900; margin-bottom: 14px; }
+.recent-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 0;
+  border-bottom: 1px solid var(--border); font-size: 12px;
+}
+.recent-item:last-child { border-bottom: none; }
+.recent-badge {
+  font-size: 10px; padding: 2px 8px; border-radius: 6px; font-weight: 700; flex-shrink: 0;
+}
+.rb-new  { background: rgba(0,255,140,0.12); border: 1px solid rgba(0,255,140,0.3); color: var(--green); }
+.rb-post { background: rgba(0,229,255,0.12); border: 1px solid rgba(0,229,255,0.3); color: var(--cyan); }
+.rb-inq  { background: rgba(255,215,0,0.10); border: 1px solid rgba(255,215,0,0.3); color: var(--gold); }
+.recent-text { flex: 1; color: var(--text); }
+.recent-time { color: var(--muted); flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+/* ── テーブル共通 ── */
+.table-toolbar {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.admin-search {
+  flex: 1; min-width: 200px; padding: 9px 14px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); font-size: 13px; font-family: 'Noto Sans JP', sans-serif; outline: none;
+  transition: border-color 0.2s;
+}
+.admin-search:focus { border-color: rgba(255,215,0,0.4); }
+.filter-btn {
+  padding: 8px 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif; transition: all 0.18s;
+}
+.filter-btn.active { background: rgba(255,215,0,0.1); border-color: rgba(255,215,0,0.3); color: var(--gold); }
+.filter-btn:hover { color: var(--text); }
+.admin-table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.admin-table { width: 100%; border-collapse: collapse; }
+.admin-table th {
+  padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700;
+  color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase;
+  background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border);
+}
+.admin-table td {
+  padding: 13px 16px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: middle;
+}
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: rgba(255,255,255,0.02); }
+.user-cell { display: flex; align-items: center; gap: 10px; }
+.user-av {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 900; color: #000;
+}
+.user-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+.user-name { font-weight: 700; }
+.user-email { font-size: 11px; color: var(--muted); }
+.status-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 7px; font-size: 11px; font-weight: 700;
+}
+.sb-active { background: rgba(0,255,140,0.1); border: 1px solid rgba(0,255,140,0.3); color: var(--green); }
+.sb-banned { background: rgba(255,59,92,0.1); border: 1px solid rgba(255,59,92,0.3); color: var(--red); }
+.sb-pending { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); color: var(--gold); }
+.sb-hidden { background: rgba(107,112,148,0.15); border: 1px solid rgba(107,112,148,0.3); color: var(--muted); }
+.sb-open { background: rgba(255,140,53,0.1); border: 1px solid rgba(255,140,53,0.3); color: var(--orange); }
+.sb-closed { background: rgba(0,255,140,0.1); border: 1px solid rgba(0,255,140,0.3); color: var(--green); }
+
+.action-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.act-btn {
+  padding: 5px 10px; border-radius: 7px; font-size: 11px; font-weight: 700; cursor: pointer;
+  border: 1px solid; transition: all 0.18s; font-family: 'Noto Sans JP', sans-serif;
+}
+.act-view   { background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.25); color: var(--cyan); }
+.act-ban    { background: rgba(255,59,92,0.08); border-color: rgba(255,59,92,0.25); color: var(--red); }
+.act-unban  { background: rgba(0,255,140,0.08); border-color: rgba(0,255,140,0.25); color: var(--green); }
+.act-delete { background: rgba(255,59,92,0.08); border-color: rgba(255,59,92,0.25); color: var(--red); }
+.act-hide   { background: rgba(107,112,148,0.12); border-color: rgba(107,112,148,0.3); color: var(--muted); }
+.act-reply  { background: rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.25); color: var(--gold); }
+.act-close  { background: rgba(0,255,140,0.08); border-color: rgba(0,255,140,0.25); color: var(--green); }
+.act-btn:hover { opacity: 0.8; transform: translateY(-1px); }
+
+.provider-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 700;
+}
+.pb-google { background: rgba(66,133,244,0.12); border: 1px solid rgba(66,133,244,0.3); color: #7FB3F8; }
+.pb-email  { background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.25); color: rgba(255,215,0,0.8); }
+
+/* ── 問い合わせ詳細モーダル ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: linear-gradient(160deg, #0f1225, #08090f);
+  border: 1px solid rgba(255,215,0,0.2); border-radius: 20px;
+  width: 100%; max-width: 540px; max-height: 85vh; overflow-y: auto;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.9);
+  animation: modalPop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes modalPop { from{opacity:0;transform:scale(0.94)} to{opacity:1;transform:scale(1)} }
+.modal-head {
+  padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-head-title { font-size: 15px; font-weight: 900; }
+.modal-close {
+  width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.06);
+  border: none; color: var(--muted); cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.modal-close:hover { background: rgba(255,59,92,0.2); color: #FFF; }
+.modal-body { padding: 20px 24px; }
+.modal-field { margin-bottom: 14px; }
+.modal-field-label { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 5px; }
+.modal-field-val { font-size: 13px; color: var(--text); line-height: 1.6; }
+.modal-textarea {
+  width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border); border-radius: 10px; color: var(--text);
+  font-size: 13px; font-family: 'Noto Sans JP', sans-serif; resize: vertical; min-height: 80px;
+  outline: none;
+}
+.modal-textarea:focus { border-color: rgba(255,215,0,0.4); }
+.modal-footer { padding: 0 24px 20px; display: flex; gap: 8px; justify-content: flex-end; }
+.modal-btn {
+  padding: 9px 18px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
+  border: none; font-family: 'Noto Sans JP', sans-serif; transition: all 0.2s;
+}
+.modal-btn-primary { background: linear-gradient(135deg, var(--gold), var(--orange)); color: #000; }
+.modal-btn-secondary { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--muted); }
+.modal-btn:hover { transform: translateY(-1px); }
+
+/* ── トースト ── */
+.admin-toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: #1a1e30; border: 1px solid rgba(255,215,0,0.3);
+  padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 700;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+  transform: translateY(80px); opacity: 0; transition: all 0.3s;
+  pointer-events: none;
+}
+.admin-toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── ページネーション ── */
+.pagination { display: flex; gap: 6px; margin-top: 16px; justify-content: center; }
+.page-btn {
+  width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg2); color: var(--muted); font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: 'Noto Sans JP', sans-serif; transition: all 0.18s;
+  display: flex; align-items: center; justify-content: center;
+}
+.page-btn.active { background: rgba(255,215,0,0.1); border-color: rgba(255,215,0,0.3); color: var(--gold); }
+.page-btn:hover:not(.active) { color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- ログイン画面 -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">KOUSATSU</div>
+    <div class="login-sub">Admin Console</div>
+    <div class="login-field">
+      <label class="login-label">管理者メールアドレス</label>
+      <input class="login-input" id="loginEmail" type="email" placeholder="admin@example.com">
+    </div>
+    <div class="login-field">
+      <label class="login-label">パスワード</label>
+      <input class="login-input" id="loginPw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()">
+    </div>
+    <button class="login-btn" onclick="adminLogin()">管理画面にログイン</button>
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-note">※ 管理者アカウントのみアクセス可能です</div>
+  </div>
+</div>
+
+<!-- サイドバー -->
+<div id="sidebar" style="display:none;">
+  <div class="sb-logo">
+    <div class="sb-logo-title">KOUSATSU</div>
+    <div class="sb-logo-sub">Admin Console</div>
+    <span class="sb-badge">ADMIN</span>
+  </div>
+  <nav class="sb-nav">
+    <button class="sb-item active" onclick="gotoPage('dashboard')" id="sb-dashboard">
+      <span class="sb-item-icon">📊</span> ダッシュボード
+    </button>
+    <button class="sb-item" onclick="gotoPage('users')" id="sb-users">
+      <span class="sb-item-icon">👤</span> ユーザー管理
+    </button>
+    <button class="sb-item" onclick="gotoPage('posts')" id="sb-posts">
+      <span class="sb-item-icon">📝</span> 投稿管理
+    </button>
+    <button class="sb-item" onclick="gotoPage('inquiries')" id="sb-inquiries">
+      <span class="sb-item-icon">📩</span> 問い合わせ
+      <span id="inqBadge" style="margin-left:auto;background:rgba(255,59,92,0.2);border:1px solid rgba(255,59,92,0.4);color:var(--red);font-size:10px;padding:1px 6px;border-radius:6px;display:none;"></span>
+    </button>
+    <div class="sb-divider"></div>
+    <button class="sb-item" onclick="window.open('index.html','_blank')">
+      <span class="sb-item-icon">🌐</span> サイトを見る
+    </button>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-user">
+      <div class="sb-user-avatar" id="sbAvatar">A</div>
+      <div>
+        <div class="sb-user-name" id="sbName">Admin</div>
+        <div class="sb-user-role">管理者</div>
+      </div>
+    </div>
+    <button class="sb-logout" onclick="adminLogout()">🚪 ログアウト</button>
+  </div>
+</div>
+
+<!-- メインコンテンツ -->
+<div id="main">
+
+  <!-- ===== ダッシュボード ===== -->
+  <div class="admin-page active" id="page-dashboard">
+    <div class="page-header">
+      <div>
+        <div class="page-title">📊 ダッシュボード</div>
+        <div class="page-subtitle" id="dashDate"></div>
+      </div>
+      <button class="filter-btn" onclick="refreshDash()">🔄 更新</button>
+    </div>
+    <div class="page-content">
+      <div class="stats-grid">
+        <div class="stat-card" data-accent="gold">
+          <div class="stat-icon">👤</div>
+          <div class="stat-num" id="statUsers">—</div>
+          <div class="stat-label">総ユーザー数</div>
+          <div class="stat-delta up" id="statUsersD"></div>
+        </div>
+        <div class="stat-card" data-accent="cyan">
+          <div class="stat-icon">📝</div>
+          <div class="stat-num" id="statPosts">—</div>
+          <div class="stat-label">総投稿数</div>
+          <div class="stat-delta up" id="statPostsD"></div>
+        </div>
+        <div class="stat-card" data-accent="green">
+          <div class="stat-icon">❤️</div>
+          <div class="stat-num" id="statLikes">—</div>
+          <div class="stat-label">総いいね数</div>
+          <div class="stat-delta up" id="statLikesD"></div>
+        </div>
+        <div class="stat-card" data-accent="purple">
+          <div class="stat-icon">📩</div>
+          <div class="stat-num" id="statInq">—</div>
+          <div class="stat-label">未対応問い合わせ</div>
+          <div class="stat-delta" id="statInqD"></div>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">📈 週別投稿数</div>
+          <div class="bar-chart" id="weekChart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">🎬 ジャンル分布</div>
+          <div class="donut-wrap">
+            <canvas id="donutCanvas" width="90" height="90"></canvas>
+            <div class="donut-legend" id="donutLegend"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="recent-section">
+        <div class="recent-title">🕐 最近のアクティビティ</div>
+        <div id="recentActivity"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ユーザー管理 ===== -->
+  <div class="admin-page" id="page-users">
+    <div class="page-header">
+      <div>
+        <div class="page-title">👤 ユーザー管理</div>
+        <div class="page-subtitle">登録ユーザーの一覧・管理</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="table-toolbar">
+        <input class="admin-search" id="userSearch" placeholder="🔍 名前・メールで検索..." oninput="filterUsers()">
+        <button class="filter-btn active" onclick="setUserFilter('all',this)">すべて</button>
+        <button class="filter-btn" onclick="setUserFilter('active',this)">有効</button>
+        <button class="filter-btn" onclick="setUserFilter('banned',this)">BAN済み</button>
+        <button class="filter-btn" onclick="setUserFilter('unverified',this)">未認証</button>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ユーザー</th>
+              <th>プロバイダー</th>
+              <th>登録日</th>
+              <th>最終ログイン</th>
+              <th>ステータス</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="usersPager"></div>
+    </div>
+  </div>
+
+  <!-- ===== 投稿管理 ===== -->
+  <div class="admin-page" id="page-posts">
+    <div class="page-header">
+      <div>
+        <div class="page-title">📝 投稿管理</div>
+        <div class="page-subtitle">考察投稿の確認・削除・非表示</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="table-toolbar">
+        <input class="admin-search" id="postSearch" placeholder="🔍 タイトル・作品名で検索..." oninput="filterPosts()">
+        <button class="filter-btn active" onclick="setPostFilter('all',this)">すべて</button>
+        <button class="filter-btn" onclick="setPostFilter('visible',this)">表示中</button>
+        <button class="filter-btn" onclick="setPostFilter('hidden',this)">非表示</button>
+        <button class="filter-btn" onclick="setPostFilter('reported',this)">通報あり</button>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>投稿タイトル</th>
+              <th>投稿者</th>
+              <th>ジャンル</th>
+              <th>いいね</th>
+              <th>ステータス</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="postsTableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="postsPager"></div>
+    </div>
+  </div>
+
+  <!-- ===== 問い合わせ管理 ===== -->
+  <div class="admin-page" id="page-inquiries">
+    <div class="page-header">
+      <div>
+        <div class="page-title">📩 問い合わせ管理</div>
+        <div class="page-subtitle">ユーザーからの問い合わせ一覧</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="table-toolbar">
+        <input class="admin-search" id="inqSearch" placeholder="🔍 件名・内容で検索..." oninput="filterInquiries()">
+        <button class="filter-btn active" onclick="setInqFilter('all',this)">すべて</button>
+        <button class="filter-btn" onclick="setInqFilter('open',this)">未対応</button>
+        <button class="filter-btn" onclick="setInqFilter('closed',this)">対応済み</button>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>種別</th>
+              <th>件名</th>
+              <th>送信者</th>
+              <th>受信日時</th>
+              <th>ステータス</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="inqTableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="inqPager"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- 問い合わせ詳細モーダル -->
+<div class="modal-overlay" id="inqModal" onclick="if(event.target===this)closeInqModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-head-title">📩 問い合わせ詳細</div>
+      <button class="modal-close" onclick="closeInqModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <div class="modal-field-label">種別</div>
+        <div class="modal-field-val" id="mInqType"></div>
+      </div>
+      <div class="modal-field">
+        <div class="modal-field-label">件名</div>
+        <div class="modal-field-val" id="mInqSubject"></div>
+      </div>
+      <div class="modal-field">
+        <div class="modal-field-label">内容</div>
+        <div class="modal-field-val" id="mInqBody" style="white-space:pre-wrap;background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;border:1px solid var(--border);"></div>
+      </div>
+      <div class="modal-field">
+        <div class="modal-field-label">送信者メール</div>
+        <div class="modal-field-val" id="mInqEmail"></div>
+      </div>
+      <div class="modal-field">
+        <div class="modal-field-label">返信メモ（内部用）</div>
+        <textarea class="modal-textarea" id="mInqMemo" placeholder="対応メモを入力..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-secondary" onclick="closeInqModal()">閉じる</button>
+      <button class="modal-btn modal-btn-primary" onclick="closeInquiryItem()">✓ 対応済みにする</button>
+    </div>
+  </div>
+</div>
+
+<!-- トースト -->
+<div class="admin-toast" id="adminToast"></div>
+
+<script>
+/* ========== 管理者メールリスト（本番では変更してください） ========== */
+const ADMIN_EMAILS = [
+  'sss0414310rrr@gmail.com',
+];
+
+/* ========== Firebase認証 ========== */
+let adminUser = null;
+
+window.onFirebaseUser = function(user) {
+  if (!user) {
+    showLogin();
+    return;
+  }
+  // 管理者チェック（メールアドレスで判定）
+  // ※本番はFirestore の admin フラグや Custom Claims で判定推奨
+  if (ADMIN_EMAILS.length > 0 && !ADMIN_EMAILS.includes(user.email)) {
+    showLogin('このアカウントには管理者権限がありません');
+    window._fbSignOut && window._fbSignOut();
+    return;
+  }
+  adminUser = user;
+  showAdmin(user);
+};
+
+function showLogin(err) {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('sidebar').style.display = 'none';
+  document.getElementById('main').classList.remove('show');
+  if (err) document.getElementById('loginErr').textContent = err;
+}
+
+function showAdmin(user) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('sidebar').style.display = 'flex';
+  document.getElementById('main').classList.add('show');
+  document.getElementById('sbName').textContent = user.displayName || user.email.split('@')[0];
+  document.getElementById('sbAvatar').textContent = (user.displayName || user.email).charAt(0).toUpperCase();
+  initDash();
+  renderUsers();
+  renderPosts();
+  renderInquiries();
+}
+
+function adminLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPw').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.textContent = '';
+
+  if (!email || !pw) { errEl.textContent = 'メールアドレスとパスワードを入力してください'; return; }
+
+  if (!window._auth) {
+    // Firebase未ロード時はデモログイン
+    demoLogin(email);
+    return;
+  }
+
+  const { signInWithEmailAndPassword } = window._firebase_auth || {};
+  if (!signInWithEmailAndPassword) { demoLogin(email); return; }
+
+  errEl.textContent = 'ログイン中...';
+  signInWithEmailAndPassword(window._auth, email, pw)
+    .then(cred => { /* onAuthStateChanged が拾う */ })
+    .catch(err => {
+      const msgs = {
+        'auth/invalid-credential': 'メールアドレスまたはパスワードが違います',
+        'auth/too-many-requests':  'しばらく時間をおいてから再試行してください',
+      };
+      errEl.textContent = msgs[err.code] || 'ログインに失敗しました';
+    });
+}
+
+function demoLogin(email) {
+  // Firebase未設定時のデモ用
+  adminUser = { email, displayName: 'Admin', uid: 'demo' };
+  showAdmin(adminUser);
+}
+
+async function adminLogout() {
+  if (!confirm('ログアウトしますか？')) return;
+  try { window._fbSignOut && await window._fbSignOut(); } catch(e) {}
+  adminUser = null;
+  showLogin();
+}
+
+/* ========== ページ切替 ========== */
+function gotoPage(page) {
+  document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('sb-' + page).classList.add('active');
+}
+
+/* ========== ダッシュボード ========== */
+const dashData = {
+  users: 128, posts: 312, likes: 1847, inqOpen: 3,
+  week: [
+    {d:'月',v:12},{d:'火',v:18},{d:'水',v:9},{d:'木',v:24},
+    {d:'金',v:31},{d:'土',v:42},{d:'日',v:28}
+  ],
+  genres: [
+    {label:'アニメ',val:54,color:'#FF6B35'},
+    {label:'漫画',val:22,color:'#9D4EDD'},
+    {label:'映画',val:14,color:'#00E5FF'},
+    {label:'ドラマ',val:10,color:'#FF3B5C'},
+  ],
+  activity: [
+    {type:'new', text:'新規ユーザー「フリーレン太郎」が登録しました', time:'2分前'},
+    {type:'post',text:'新しい考察「ナウシカの正体考察」が投稿されました', time:'11分前'},
+    {type:'inq', text:'バグ報告：「ログインができない」', time:'34分前'},
+    {type:'new', text:'新規ユーザー「進撃ファン」が登録しました', time:'1時間前'},
+    {type:'post',text:'新しい考察「鬼滅の刃 最終章の伏線」が投稿されました', time:'2時間前'},
+  ]
+};
+
+function initDash() {
+  document.getElementById('dashDate').textContent =
+    new Date().toLocaleDateString('ja-JP', {year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  document.getElementById('statUsers').textContent = dashData.users.toLocaleString();
+  document.getElementById('statPosts').textContent = dashData.posts.toLocaleString();
+  document.getElementById('statLikes').textContent = dashData.likes.toLocaleString();
+  document.getElementById('statInq').textContent   = dashData.inqOpen;
+  document.getElementById('statUsersD').textContent = '▲ 今週 +12';
+  document.getElementById('statPostsD').textContent = '▲ 今週 +47';
+  document.getElementById('statLikesD').textContent = '▲ 今週 +203';
+  document.getElementById('statInqD').innerHTML = dashData.inqOpen > 0
+    ? `<span style="color:var(--red)">● 要対応</span>` : '<span style="color:var(--green)">✓ すべて対応済み</span>';
+
+  // 週別バーチャート
+  const max = Math.max(...dashData.week.map(w=>w.v));
+  document.getElementById('weekChart').innerHTML = dashData.week.map(w => `
+    <div class="bar-wrap">
+      <div class="bar-val">${w.v}</div>
+      <div class="bar" style="height:${Math.round(w.v/max*80)}px;background:linear-gradient(180deg,var(--cyan),rgba(0,229,255,0.3));"></div>
+      <div class="bar-label">${w.d}</div>
+    </div>`).join('');
+
+  // ドーナツ
+  drawDonut();
+
+  // アクティビティ
+  const typeMap = {new:'rb-new',post:'rb-post',inq:'rb-inq'};
+  const labelMap = {new:'新規登録',post:'新規投稿',inq:'問い合わせ'};
+  document.getElementById('recentActivity').innerHTML = dashData.activity.map(a => `
+    <div class="recent-item">
+      <span class="recent-badge ${typeMap[a.type]}">${labelMap[a.type]}</span>
+      <span class="recent-text">${a.text}</span>
+      <span class="recent-time">${a.time}</span>
+    </div>`).join('');
+
+  // 問い合わせバッジ
+  const inqBadge = document.getElementById('inqBadge');
+  if (dashData.inqOpen > 0) {
+    inqBadge.textContent = dashData.inqOpen;
+    inqBadge.style.display = 'inline-block';
+  }
+}
+
+function drawDonut() {
+  const canvas = document.getElementById('donutCanvas');
+  const ctx = canvas.getContext('2d');
+  const total = dashData.genres.reduce((s,g)=>s+g.val,0);
+  let start = -Math.PI/2;
+  const cx=45,cy=45,r=38,inner=22;
+  ctx.clearRect(0,0,90,90);
+  dashData.genres.forEach(g=>{
+    const angle = (g.val/total)*Math.PI*2;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,start+angle);
+    ctx.closePath();
+    ctx.fillStyle=g.color;
+    ctx.fill();
+    start+=angle;
+  });
+  ctx.beginPath();
+  ctx.arc(cx,cy,inner,0,Math.PI*2);
+  ctx.fillStyle='#0d1018';
+  ctx.fill();
+
+  document.getElementById('donutLegend').innerHTML = dashData.genres.map(g=>`
+    <div class="donut-item">
+      <div class="donut-dot" style="background:${g.color}"></div>
+      <span style="color:var(--muted)">${g.label}</span>
+      <span style="margin-left:auto;font-weight:700">${g.val}%</span>
+    </div>`).join('');
+}
+
+function refreshDash() {
+  dashData.users += Math.floor(Math.random()*3);
+  dashData.posts  += Math.floor(Math.random()*5);
+  dashData.likes  += Math.floor(Math.random()*20);
+  initDash();
+  showToast('📊 ダッシュボードを更新しました');
+}
+
+/* ========== ユーザー管理 ========== */
+const usersData = [
+  {id:'u1',name:'フリーレン太郎',email:'frieren@example.com',provider:'google',joined:'2025/11/01',lastLogin:'2時間前',status:'active',avatar:null},
+  {id:'u2',name:'リゼロ好き',email:'rezero@example.com',provider:'email',joined:'2025/10/15',lastLogin:'1日前',status:'active',avatar:null},
+  {id:'u3',name:'進撃ファン',email:'attack@example.com',provider:'google',joined:'2025/09/20',lastLogin:'3日前',status:'active',avatar:null},
+  {id:'u4',name:'まどマギ研究者',email:'madoka@example.com',provider:'email',joined:'2025/08/05',lastLogin:'1週間前',status:'banned',avatar:null},
+  {id:'u5',name:'転スラ勢',email:'slime@example.com',provider:'google',joined:'2025/12/01',lastLogin:'今日',status:'active',avatar:null},
+  {id:'u6',name:'ワンピ考察家',email:'onepiece@example.com',provider:'email',joined:'2025/12/10',lastLogin:'未ログイン',status:'unverified',avatar:null},
+  {id:'u7',name:'SAO好き',email:'sao@example.com',provider:'google',joined:'2025/11/20',lastLogin:'2日前',status:'active',avatar:null},
+  {id:'u8',name:'シュタゲマニア',email:'steins@example.com',provider:'email',joined:'2025/10/01',lastLogin:'5日前',status:'active',avatar:null},
+];
+
+let userFilter = 'all';
+let userSearchQ = '';
+
+function filterUsers() {
+  userSearchQ = document.getElementById('userSearch').value.toLowerCase();
+  renderUsers();
+}
+function setUserFilter(f, btn) {
+  userFilter = f;
+  document.querySelectorAll('#page-users .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderUsers();
+}
+function renderUsers() {
+  let list = usersData.filter(u => {
+    if (userFilter !== 'all' && u.status !== userFilter) return false;
+    if (userSearchQ && !u.name.toLowerCase().includes(userSearchQ) && !u.email.toLowerCase().includes(userSearchQ)) return false;
+    return true;
+  });
+  const statusLabel = {active:'有効',banned:'BAN済み',unverified:'未認証'};
+  const statusClass = {active:'sb-active',banned:'sb-banned',unverified:'sb-pending'};
+  document.getElementById('usersTableBody').innerHTML = list.map(u=>`
+    <tr>
+      <td>
+        <div class="user-cell">
+          <div class="user-av">${u.name.charAt(0)}</div>
+          <div>
+            <div class="user-name">${u.name}</div>
+            <div class="user-email">${u.email}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="provider-badge ${u.provider==='google'?'pb-google':'pb-email'}">${u.provider==='google'?'G Google':'✉ Email'}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">${u.joined}</td>
+      <td style="color:var(--muted);font-size:12px">${u.lastLogin}</td>
+      <td><span class="status-badge ${statusClass[u.status]}">${statusLabel[u.status]}</span></td>
+      <td>
+        <div class="action-btns">
+          ${u.status==='banned'
+            ? `<button class="act-btn act-unban" onclick="unbanUser('${u.id}')">✓ BAN解除</button>`
+            : `<button class="act-btn act-ban" onclick="banUser('${u.id}')">⛔ BAN</button>`}
+        </div>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">該当ユーザーなし</td></tr>';
+}
+
+function banUser(id) {
+  if (!confirm('このユーザーをBANしますか？')) return;
+  const u = usersData.find(u=>u.id===id);
+  if (u) { u.status='banned'; renderUsers(); showToast('⛔ '+u.name+' をBANしました'); }
+}
+function unbanUser(id) {
+  const u = usersData.find(u=>u.id===id);
+  if (u) { u.status='active'; renderUsers(); showToast('✓ '+u.name+' のBANを解除しました'); }
+}
+
+/* ========== 投稿管理 ========== */
+const postsData = [
+  {id:'p1',title:'フリーレンの正体は実は魔王だった説',author:'フリーレン太郎',genre:'アニメ',likes:47,status:'visible',reported:false},
+  {id:'p2',title:'リゼロ エミリアの過去に隠された伏線',author:'リゼロ好き',genre:'アニメ',likes:89,status:'visible',reported:false},
+  {id:'p3',title:'進撃の巨人 最終回の解釈まとめ',author:'進撃ファン',genre:'漫画',likes:203,status:'visible',reported:false},
+  {id:'p4',title:'転スラ リムルの最終形態考察',author:'転スラ勢',genre:'アニメ',likes:31,status:'hidden',reported:false},
+  {id:'p5',title:'ワンピース イムの正体は〇〇だった',author:'ワンピ考察家',genre:'漫画',likes:156,status:'visible',reported:true},
+  {id:'p6',title:'まどマギ 円環の理の本当の意味',author:'まどマギ研究者',genre:'アニメ',likes:72,status:'visible',reported:false},
+  {id:'p7',title:'インターステラー エンディングの物理学的解釈',author:'SAO好き',genre:'映画',likes:44,status:'visible',reported:false},
+  {id:'p8',title:'シュタインズ・ゲート 未来ガジェット研究所の謎',author:'シュタゲマニア',genre:'アニメ',likes:98,status:'visible',reported:false},
+];
+
+let postFilter='all', postSearchQ='';
+
+function filterPosts() {
+  postSearchQ = document.getElementById('postSearch').value.toLowerCase();
+  renderPosts();
+}
+function setPostFilter(f, btn) {
+  postFilter = f;
+  document.querySelectorAll('#page-posts .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPosts();
+}
+function renderPosts() {
+  let list = postsData.filter(p=>{
+    if (postFilter==='visible' && p.status!=='visible') return false;
+    if (postFilter==='hidden'  && p.status!=='hidden')  return false;
+    if (postFilter==='reported'&& !p.reported)          return false;
+    if (postSearchQ && !p.title.toLowerCase().includes(postSearchQ) && !p.author.toLowerCase().includes(postSearchQ)) return false;
+    return true;
+  });
+  document.getElementById('postsTableBody').innerHTML = list.map(p=>`
+    <tr>
+      <td>
+        <div style="font-weight:700;margin-bottom:2px">${p.reported?'🚨 ':''}${p.title}</div>
+        ${p.reported?'<div style="font-size:11px;color:var(--red)">通報あり</div>':''}
+      </td>
+      <td style="color:var(--muted);font-size:12px">${p.author}</td>
+      <td><span style="font-size:11px;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:6px">${p.genre}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:13px">❤ ${p.likes}</td>
+      <td><span class="status-badge ${p.status==='visible'?'sb-active':'sb-hidden'}">${p.status==='visible'?'表示中':'非表示'}</span></td>
+      <td>
+        <div class="action-btns">
+          ${p.status==='visible'
+            ? `<button class="act-btn act-hide" onclick="hidePost('${p.id}')">🙈 非表示</button>`
+            : `<button class="act-btn act-unban" onclick="showPost('${p.id}')">👁 表示</button>`}
+          <button class="act-btn act-delete" onclick="deletePost('${p.id}')">🗑 削除</button>
+        </div>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">該当投稿なし</td></tr>';
+}
+
+function hidePost(id) {
+  const p=postsData.find(p=>p.id===id);
+  if(p){p.status='hidden';renderPosts();showToast('🙈 投稿を非表示にしました');}
+}
+function showPost(id) {
+  const p=postsData.find(p=>p.id===id);
+  if(p){p.status='visible';renderPosts();showToast('👁 投稿を表示しました');}
+}
+function deletePost(id) {
+  if(!confirm('この投稿を削除しますか？この操作は元に戻せません。'))return;
+  const idx=postsData.findIndex(p=>p.id===id);
+  if(idx>-1){postsData.splice(idx,1);renderPosts();showToast('🗑 投稿を削除しました');}
+}
+
+/* ========== 問い合わせ管理 ========== */
+const inqData = [
+  {id:'i1',type:'🐛 バグ報告',subject:'ログインができない',body:'GoogleでログインしようとするとエラーになりPageが白くなります。\nChrome最新版・MacOS使用です。\n再現手順：1. ログインボタンを押す 2. Googleアカウントを選択する 3. 白画面になる',email:'user1@example.com',date:'2025/12/10 14:23',status:'open'},
+  {id:'i2',type:'💡 機能要望',subject:'ダークモード以外のテーマも欲しい',body:'現在ダークモードのみですが、ライトモードも追加していただけると嬉しいです。',email:'user2@example.com',date:'2025/12/09 09:15',status:'open'},
+  {id:'i3',type:'📝 コンテンツ問題',subject:'不適切な投稿がある',body:'タイムラインに明らかにネタバレ目的の投稿があります。ID: p5の投稿です。',email:'',date:'2025/12/08 22:40',status:'closed'},
+  {id:'i4',type:'👤 アカウント',subject:'アカウントを削除したい',body:'退会したいのですがやり方がわかりません。教えてください。',email:'user4@example.com',date:'2025/12/07 11:00',status:'open'},
+  {id:'i5',type:'💬 その他',subject:'サービスについて',body:'とても良いサービスです！応援しています。',email:'fan@example.com',date:'2025/12/06 16:30',status:'closed'},
+];
+
+let inqFilter='all', inqSearchQ='', currentInqId=null;
+
+function filterInquiries() {
+  inqSearchQ = document.getElementById('inqSearch').value.toLowerCase();
+  renderInquiries();
+}
+function setInqFilter(f,btn) {
+  inqFilter=f;
+  document.querySelectorAll('#page-inquiries .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderInquiries();
+}
+function renderInquiries() {
+  let list=inqData.filter(i=>{
+    if(inqFilter==='open'   && i.status!=='open')   return false;
+    if(inqFilter==='closed' && i.status!=='closed') return false;
+    if(inqSearchQ && !i.subject.toLowerCase().includes(inqSearchQ) && !i.body.toLowerCase().includes(inqSearchQ)) return false;
+    return true;
+  });
+  document.getElementById('inqTableBody').innerHTML = list.map(i=>`
+    <tr>
+      <td style="font-size:12px">${i.type}</td>
+      <td style="font-weight:700">${i.subject}</td>
+      <td style="color:var(--muted);font-size:12px">${i.email||'（匿名）'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">${i.date}</td>
+      <td><span class="status-badge ${i.status==='open'?'sb-open':'sb-closed'}">${i.status==='open'?'未対応':'対応済み'}</span></td>
+      <td>
+        <div class="action-btns">
+          <button class="act-btn act-reply" onclick="openInqModal('${i.id}')">📋 詳細</button>
+          ${i.status==='open'?`<button class="act-btn act-close" onclick="closeInqDirect('${i.id}')">✓ 対応済み</button>`:''}
+        </div>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">該当なし</td></tr>';
+}
+
+function openInqModal(id) {
+  const i=inqData.find(i=>i.id===id);
+  if(!i)return;
+  currentInqId=id;
+  document.getElementById('mInqType').textContent=i.type;
+  document.getElementById('mInqSubject').textContent=i.subject;
+  document.getElementById('mInqBody').textContent=i.body;
+  document.getElementById('mInqEmail').textContent=i.email||'（メールアドレスなし）';
+  document.getElementById('mInqMemo').value=i.memo||'';
+  document.getElementById('inqModal').classList.add('open');
+}
+function closeInqModal() {
+  if(currentInqId){
+    const i=inqData.find(i=>i.id===currentInqId);
+    if(i) i.memo=document.getElementById('mInqMemo').value;
+  }
+  document.getElementById('inqModal').classList.remove('open');
+}
+function closeInquiryItem() {
+  if(!currentInqId)return;
+  const i=inqData.find(i=>i.id===currentInqId);
+  if(i){i.status='closed';}
+  closeInqModal();
+  renderInquiries();
+  showToast('✓ 対応済みにしました');
+  // バッジ更新
+  const open=inqData.filter(i=>i.status==='open').length;
+  const badge=document.getElementById('inqBadge');
+  if(open>0){badge.textContent=open;badge.style.display='inline-block';}
+  else badge.style.display='none';
+}
+function closeInqDirect(id) {
+  const i=inqData.find(i=>i.id===id);
+  if(i){i.status='closed';renderInquiries();showToast('✓ 対応済みにしました');}
+}
+
+/* ========== トースト ========== */
+let _toastTimer=null;
+function showToast(msg) {
+  const el=document.getElementById('adminToast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>el.classList.remove('show'),2800);
+}
+</script>
+</body>
+</html>
